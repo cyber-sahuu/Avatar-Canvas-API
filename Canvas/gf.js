@@ -1,6 +1,6 @@
 module.exports.config = {
   name: "gf",
-  version: "1.0.0",
+  version: "1.0.1",
   hasPermssion: 0,
   credits: "SHAHADAT SAHU",
   description: "couple banner",
@@ -21,42 +21,36 @@ module.exports.run = async function ({ event, api }) {
 
   const { threadID, messageID, senderID, mentions, messageReply } = event;
 
-  let targetID = null;
+  let targetID =
+    messageReply?.senderID ||
+    (mentions && Object.keys(mentions)[0]);
 
-  if (messageReply && messageReply.senderID) {
-    targetID = messageReply.senderID;
-  } else if (mentions && Object.keys(mentions).length > 0) {
-    targetID = Object.keys(mentions)[0];
-  }
-
-  if (!targetID) {
+  if (!targetID)
     return api.sendMessage(
       "Please reply or mention someone......",
       threadID,
       messageID
     );
-  }
 
   try {
     const apiList = await axios.get(
-      "https://raw.githubusercontent.com/shahadat-sahu/SAHU-API/refs/heads/main/SAHU-API.json"
+      "https://raw.githubusercontent.com/shahadat-sahu/SAHU-API/main/SAHU-API.json"
     );
 
     const AVATAR_CANVAS_API = apiList.data.AvatarCanvas;
+    if (!AVATAR_CANVAS_API) throw true;
 
     const res = await axios.post(
       `${AVATAR_CANVAS_API}/api`,
-      {
-        cmd: "gf",
-        senderID,
-        targetID
-      },
+      { cmd: "gf", senderID, targetID },
       { responseType: "arraybuffer", timeout: 30000 }
     );
 
+    const cacheDir = path.join(__dirname, "cache");
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+
     const imgPath = path.join(
-      __dirname,
-      "cache",
+      cacheDir,
       `gf_${senderID}_${targetID}.png`
     );
 
@@ -72,9 +66,9 @@ module.exports.run = async function ({ event, api }) {
       messageID
     );
 
-  } catch {
+  } catch (e) {
     return api.sendMessage(
-      "API Error Call Boss SAHU",
+      "GF API Error | SAHU-API unreachable",
       threadID,
       messageID
     );
