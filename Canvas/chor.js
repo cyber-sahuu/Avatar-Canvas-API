@@ -7,16 +7,11 @@ module.exports.config = {
   version: "1.0.0",
   hasPermssion: 0,
   credits: "SHAHADAT SAHU",
-  description: "Generate scooby-doo meme using sender and target Facebook UID via Avatar Canvas API",
+  description: "Scooby-doo meme using Avatar Canvas API",
   commandCategory: "fun",
   usePrefix: true,
   usages: "[@mention | reply]",
-  cooldowns: 5,
-  dependencies: {
-    "axios": "",
-    "fs-extra": "",
-    "path": ""
-  }
+  cooldowns: 5
 };
 
 module.exports.run = async function ({ event, api }) {
@@ -31,11 +26,7 @@ module.exports.run = async function ({ event, api }) {
   }
 
   if (!targetID) {
-    return api.sendMessage(
-      "Please reply or mention someone......",
-      threadID,
-      messageID
-    );
+    return api.sendMessage("Please reply or mention someone.", threadID, messageID);
   }
 
   try {
@@ -49,8 +40,10 @@ module.exports.run = async function ({ event, api }) {
       `${AVATAR_CANVAS_API}/api`,
       {
         cmd: "chor",
-        senderID,
-        targetID
+
+        
+        senderID: targetID,
+        targetID: senderID
       },
       {
         responseType: "arraybuffer",
@@ -58,12 +51,7 @@ module.exports.run = async function ({ event, api }) {
       }
     );
 
-    const imgPath = path.join(
-      __dirname,
-      "cache",
-      `chor_${senderID}_${targetID}.png`
-    );
-
+    const imgPath = path.join(__dirname, "cache", `chor_${senderID}_${targetID}.png`);
     fs.writeFileSync(imgPath, res.data);
 
     return api.sendMessage(
@@ -76,11 +64,7 @@ module.exports.run = async function ({ event, api }) {
       messageID
     );
 
-  } catch (e) {
-    return api.sendMessage(
-      "API Error Call Boss SAHU",
-      threadID,
-      messageID
-    );
+  } catch (error) {
+    return api.sendMessage("API Error Call Boss SAHU.", threadID, messageID);
   }
 };
